@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Formko | แบบฟอร์มขอใบเสนอราคา</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --navy:#242960; --navy-700:#1a1e4a; --green:#06693A; --green-50:#e8f3ed;
+  --ink:#1c1f2b; --muted:#6b7280; --line:#e2e5ee; --bg:#f4f5f9; --card:#fff;
+  --warn:#b45309; --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Noto Sans Thai',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:var(--bg); color:var(--ink); font-size:16px; line-height:1.55;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 0 120px}
+
+/* ---------- header ---------- */
+header{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-700) 60%,#0d3f4d 100%);
+  color:#fff;padding:26px 20px 22px;
+}
+header .logoBox{background:#fff;border-radius:10px;padding:9px 13px;display:inline-block;margin-bottom:12px}
+header .logoBox img{display:block;height:34px;width:auto}
+header h1{margin:6px 0 4px;font-size:24px;font-weight:700;line-height:1.3}
+header p{margin:0;font-size:14px;opacity:.85}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+  padding:4px 10px;border-radius:999px;font-size:12px}
+
+/* ---------- progress ---------- */
+.progress{position:sticky;top:0;z-index:30;background:#fff;border-bottom:1px solid var(--line);
+  padding:10px 16px;display:flex;align-items:center;gap:10px}
+.bar{flex:1;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;width:0;background:var(--green);transition:width .3s}
+.progress b{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap}
+
+/* ---------- cards ---------- */
+.card{background:var(--card);margin:14px 12px;border-radius:var(--radius);
+  border:1px solid var(--line);overflow:hidden}
+.card > h2{
+  margin:0;padding:14px 16px;font-size:15px;font-weight:700;color:var(--navy);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;background:#fbfbfe;
+}
+.card > h2 .n{width:24px;height:24px;flex:none;border-radius:8px;background:var(--navy);color:#fff;
+  font-size:12px;display:grid;place-items:center;font-weight:700}
+.body{padding:16px}
+.hint{font-size:13px;color:var(--muted);margin:-4px 0 14px}
+
+/* ---------- fields ---------- */
+.f{margin-bottom:15px}
+.f:last-child{margin-bottom:0}
+label.lb{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.req{color:#c0392b}
+.opt{color:var(--muted);font-weight:400;font-size:12px}
+input[type=text],input[type=tel],input[type=email],input[type=number],input[type=date],select,textarea{
+  width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+  font-family:inherit;font-size:16px;background:#fff;color:var(--ink);
+}
+textarea{min-height:82px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(36,41,96,.10)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.row{grid-template-columns:1fr}}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;width:0;height:0}
+.chip span{display:inline-block;padding:8px 13px;border:1px solid var(--line);border-radius:999px;
+  font-size:14px;cursor:pointer;background:#fff;user-select:none;transition:.15s}
+.chip input:checked + span{background:var(--green-50);border-color:var(--green);color:var(--green);font-weight:600}
+.chip input:focus-visible + span{box-shadow:0 0 0 3px rgba(6,105,58,.18)}
+
+/* size grid */
+.sizes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:520px){.sizes{grid-template-columns:repeat(3,1fr)}}
+.sz{border:1px solid var(--line);border-radius:10px;padding:7px 6px;text-align:center;background:#fff}
+.sz b{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+.sz input{width:100%;border:none;text-align:center;font-size:16px;padding:2px 0;font-weight:600}
+.sz input:focus{outline:none}
+
+/* design block */
+.design{border:1px solid var(--line);border-radius:12px;margin-bottom:14px;background:#fcfcff}
+.design > .dh{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:11px 13px;border-bottom:1px solid var(--line);background:var(--navy);color:#fff;border-radius:11px 11px 0 0}
+.design > .dh strong{font-size:14px}
+.design .db{padding:14px}
+.btn-x{background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:8px;
+  padding:4px 10px;font-size:12px;cursor:pointer;font-family:inherit}
+.btn-add{width:100%;padding:12px;border:1.5px dashed var(--navy);background:#fff;color:var(--navy);
+  border-radius:12px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit}
+
+/* upload */
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:18px 12px;text-align:center;
+  background:#fff;cursor:pointer}
+.drop:hover{border-color:var(--navy);background:#fbfbff}
+.drop b{display:block;color:var(--navy);font-size:14px}
+.drop small{color:var(--muted);font-size:12px}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.thumb{position:relative;width:74px;height:74px;border-radius:9px;overflow:hidden;border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb button{position:absolute;top:2px;right:2px;width:20px;height:20px;border:none;border-radius:50%;
+  background:rgba(0,0,0,.6);color:#fff;font-size:13px;line-height:1;cursor:pointer}
+
+.note{background:#fff8e6;border:1px solid #f2dfae;color:#7a5a12;border-radius:10px;
+  padding:11px 13px;font-size:13px;margin-bottom:14px}
+.sum{background:var(--green-50);border:1px solid #bfe0cd;border-radius:10px;padding:11px 13px;
+  font-size:14px;font-weight:600;color:var(--green)}
+
+/* submit bar */
+.subbar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom));z-index:40}
+.subbar .in{max-width:720px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.btn{flex:1;padding:14px;border:none;border-radius:12px;background:var(--green);color:#fff;
+  font-size:16px;font-weight:700;font-family:inherit;cursor:pointer}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.ghost{flex:none;background:#fff;color:var(--navy);border:1px solid var(--line);font-size:14px;padding:14px 14px}
+
+/* done */
+.done{display:none;padding:40px 22px;text-align:center}
+.done .tick{width:66px;height:66px;margin:0 auto 16px;border-radius:50%;background:var(--green-50);
+  color:var(--green);display:grid;place-items:center;font-size:34px}
+.done h2{margin:0 0 8px;color:var(--navy);font-size:20px}
+.done p{color:var(--muted);font-size:14px;margin:0 auto;max-width:420px}
+.code{display:inline-block;margin-top:14px;background:var(--navy);color:#fff;padding:9px 16px;
+  border-radius:10px;font-weight:700;letter-spacing:.06em}
+/* ---------- PDF summary sheet ---------- */
+#pdfSheet{position:fixed;left:-99999px;top:0;width:794px;background:#fff;color:#1c1f2b;
+  font-family:'Noto Sans Thai',sans-serif;font-size:12.5px;line-height:1.5}
+#pdfSheet .pg{padding:34px 40px}
+#pdfSheet .ph{display:flex;align-items:flex-start;justify-content:space-between;
+  border-bottom:3px solid #242960;padding-bottom:12px;margin-bottom:16px}
+#pdfSheet .ph img{height:40px}
+#pdfSheet .ph .r{text-align:right}
+#pdfSheet .ph h1{margin:0 0 4px;font-size:17px;color:#242960}
+#pdfSheet .ph .ref{display:inline-block;background:#242960;color:#fff;padding:4px 12px;
+  border-radius:6px;font-weight:700;letter-spacing:.05em;font-size:13px}
+#pdfSheet .ph .dt{font-size:11.5px;color:#6b7280;margin-top:5px}
+#pdfSheet h2{font-size:13px;color:#fff;background:#242960;margin:16px 0 0;padding:6px 11px;border-radius:6px 6px 0 0}
+#pdfSheet table{width:100%;border-collapse:collapse;margin:0 0 4px}
+#pdfSheet td,#pdfSheet th{border:1px solid #d9dce6;padding:6px 9px;vertical-align:top;font-size:12px}
+#pdfSheet th{background:#f2f3f8;text-align:left;font-weight:600;width:150px;color:#3b4058}
+#pdfSheet .dt2 th{width:auto;text-align:center}
+#pdfSheet .dt2 td{text-align:center}
+#pdfSheet .dt2 td.l{text-align:left}
+#pdfSheet .imgs{display:flex;flex-wrap:wrap;gap:6px;padding:7px 0 2px}
+#pdfSheet .imgs img{width:104px;height:104px;object-fit:cover;border:1px solid #d9dce6;border-radius:5px}
+#pdfSheet .cond{margin-top:16px;border:1px solid #e6c98a;background:#fdf7e8;border-radius:8px;
+  padding:11px 13px;font-size:11.5px;color:#6b4c0d}
+#pdfSheet .ft{margin-top:18px;border-top:1px solid #d9dce6;padding-top:9px;
+  font-size:11px;color:#6b7280;display:flex;justify-content:space-between}
+#pdfSheet .tot{background:#e8f3ed;font-weight:700;color:#06693A}
+.err{display:none;margin:0 12px 12px;background:#fdecec;border:1px solid #f3c2c2;color:#a02121;
+  padding:11px 13px;border-radius:10px;font-size:14px}
+</style>
+</head>
+<body>
+
+<div id="formView">
+  <header>
+    <div class="logoBox"><img src="data:image/png;base64,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" alt="Formko Garment"></div>
+    <h1>แบบฟอร์มขอใบเสนอราคา</h1>
+    <p>โรงงานผลิตชุดว่ายน้ำ · ชุดออกกำลังกาย · สปอร์ตบรา · ยูนิฟอร์ม<br>ประสบการณ์กว่า 30 ปี</p>
+    <div class="badges">
+      <div class="badge">ขั้นต่ำ 100 ตัว / แบบ / สี</div>
+      <div class="badge">คละไซส์ได้ 3–4 ไซส์</div>
+      <div class="badge">เลือกผ้า–เลือกสีได้</div>
+    </div>
+  </header>
+
+  <div class="progress"><div class="bar"><span id="barFill"></span></div><b id="barTxt">0%</b></div>
+
+  <div class="err" id="errBox"></div>
+
+  <div class="wrap">
+
+    <!-- 1 ผู้ติดต่อ -->
+    <section class="card">
+      <h2><span class="n">1</span> ข้อมูลผู้ติดต่อ</h2>
+      <div class="body">
+        <div class="row">
+          <div class="f"><label class="lb">ชื่อผู้ติดต่อ <span class="req">*</span></label>
+            <input type="text" id="cName" required placeholder="ชื่อ-นามสกุล"></div>
+          <div class="f"><label class="lb">เบอร์โทร <span class="req">*</span></label>
+            <input type="tel" id="cTel" required placeholder="08x-xxx-xxxx"></div>
+        </div>
+        <div class="row">
+          <div class="f"><label class="lb">ชื่อแบรนด์ / บริษัท <span class="opt">(ถ้ามี)</span></label>
+            <input type="text" id="cBrand" placeholder="ชื่อแบรนด์หรือชื่อบริษัท"></div>
+          <div class="f"><label class="lb">LINE ID / ช่องทางติดต่อ</label>
+            <input type="text" id="cLine" placeholder="@lineid หรือ IG / Facebook"></div>
+        </div>
+        <div class="f"><label class="lb">ประเภทลูกค้า</label>
+          <div class="chips" data-single="custType">
+            <label class="chip"><input type="radio" name="custType" value="แบรนด์ของตัวเอง"><span>แบรนด์ของตัวเอง</span></label>
+            <label class="chip"><input type="radio" name="custType" value="ร้านค้า/รีเซลเลอร์"><span>ร้านค้า / รีเซลเลอร์</span></label>
+            <label class="chip"><input type="radio" name="custType" value="ทีม/องค์กร/โรงเรียน"><span>ทีม / องค์กร / โรงเรียน</span></label>
+            <label class="chip"><input type="radio" name="custType" value="ส่งออกต่างประเทศ"><span>ส่งออกต่างประเทศ</span></label>
+            <label class="chip"><input type="radio" name="custType" value="เริ่มต้นใหม่"><span>เพิ่งเริ่มต้น ยังไม่มีแบรนด์</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">เคยสั่งผลิตกับโรงงานมาก่อนหรือไม่</label>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="exp" value="เคยสั่งกับ Formko"><span>เคยสั่งกับ Formko</span></label>
+            <label class="chip"><input type="radio" name="exp" value="เคยสั่งที่อื่น"><span>เคยสั่งที่อื่น</span></label>
+            <label class="chip"><input type="radio" name="exp" value="ไม่เคย"><span>ไม่เคย / ครั้งแรก</span></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 แบบสินค้า -->
+    <section class="card">
+      <h2><span class="n">2</span> รายละเอียดสินค้าที่ต้องการผลิต</h2>
+      <div class="body">
+        <div class="note"><b>ขั้นต่ำ 100 ตัว ต่อแบบ ต่อสี</b> (ผ้า 1 ม้วน) · คละไซส์ได้ 3–4 ไซส์ · ถ้ามีหลายแบบ กด “เพิ่มแบบ” ด้านล่าง เพื่อให้ตีราคาได้ครบทุกแบบ</div>
+        <div id="designs"></div>
+        <button type="button" class="btn-add" id="addDesign">+ เพิ่มแบบสินค้า</button>
+        <div class="sum" style="margin-top:14px">รวมทั้งหมด: <span id="grandQty">0</span> ตัว · <span id="grandDesigns">0</span> แบบ</div>
+      </div>
+    </section>
+
+    <!-- 3 ผ้าและวัตถุดิบ -->
+    <section class="card">
+      <h2><span class="n">3</span> ผ้าและวัตถุดิบ</h2>
+      <div class="body">
+        <p class="hint">ถ้ายังไม่ทราบ เลือก “ให้โรงงานแนะนำ” ได้เลย ทางเราจะเสนอผ้าที่เหมาะกับงาน</p>
+        <div class="f"><label class="lb">การจัดหาผ้า</label>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="fabSrc" value="ให้โรงงานจัดหา"><span>ให้โรงงานจัดหาให้</span></label>
+            <label class="chip"><input type="radio" name="fabSrc" value="ลูกค้าส่งผ้ามาเอง"><span>ลูกค้าส่งผ้ามาเอง</span></label>
+            <label class="chip"><input type="radio" name="fabSrc" value="ให้โรงงานแนะนำ"><span>ให้โรงงานแนะนำ</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">ชนิดผ้าที่สนใจ <span class="opt">(เลือกได้หลายข้อ)</span></label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="fabType" value="โพลีเอสเตอร์+สแปนเด็กซ์"><span>โพลีเอสเตอร์ + สแปนเด็กซ์</span></label>
+            <label class="chip"><input type="checkbox" name="fabType" value="ไนลอน+สแปนเด็กซ์"><span>ไนลอน + สแปนเด็กซ์</span></label>
+            <label class="chip"><input type="checkbox" name="fabType" value="ผ้าว่ายน้ำกันคลอรีน"><span>ผ้าว่ายน้ำกันคลอรีน</span></label>
+            <label class="chip"><input type="checkbox" name="fabType" value="ผ้าดรายฟิต"><span>ดรายฟิต</span></label>
+            <label class="chip"><input type="checkbox" name="fabType" value="ผ้าจับคู่/Interlock"><span>Interlock</span></label>
+            <label class="chip"><input type="checkbox" name="fabType" value="ผ้าเงา/Shiny"><span>ผ้าเงา (Shiny)</span></label>
+            <label class="chip"><input type="checkbox" name="fabType" value="ผ้าด้าน/Matte"><span>ผ้าด้าน (Matte)</span></label>
+            <label class="chip"><input type="checkbox" name="fabType" value="ริบ/Ribbed"><span>ริบ (Ribbed)</span></label>
+            <label class="chip"><input type="checkbox" name="fabType" value="ยังไม่ทราบ"><span>ยังไม่ทราบ</span></label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="f"><label class="lb">น้ำหนักผ้า / ความหนา <span class="opt">(ถ้าทราบ)</span></label>
+            <input type="text" id="fabGsm" placeholder="เช่น 220 gsm หรือ หนาปานกลาง"></div>
+          <div class="f"><label class="lb">สี / รหัสสี <span class="opt">(Pantone ถ้ามี)</span></label>
+            <input type="text" id="fabColor" placeholder="เช่น ดำ, เขียว Pantone 349C"></div>
+        </div>
+        <div class="f"><label class="lb">งานพิมพ์ / ลาย</label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="print" value="สีพื้น ไม่มีลาย"><span>สีพื้น ไม่มีลาย</span></label>
+            <label class="chip"><input type="checkbox" name="print" value="ซับลิเมชั่น (พิมพ์ลายทั้งตัว)"><span>ซับลิเมชั่น (พิมพ์ทั้งตัว)</span></label>
+            <label class="chip"><input type="checkbox" name="print" value="สกรีนโลโก้"><span>สกรีนโลโก้</span></label>
+            <label class="chip"><input type="checkbox" name="print" value="ปักโลโก้"><span>ปักโลโก้</span></label>
+            <label class="chip"><input type="checkbox" name="print" value="DTF / ฮีททรานสเฟอร์"><span>DTF / ฮีททรานสเฟอร์</span></label>
+            <label class="chip"><input type="checkbox" name="print" value="ผ้าลายสำเร็จ"><span>ใช้ผ้าลายสำเร็จ</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">รายละเอียดผ้าเพิ่มเติม</label>
+          <textarea id="fabNote" placeholder="เช่น ต้องการผ้าหนาไม่โปร่ง ใส่แล้วไม่เห็นซับใน / มีตัวอย่างผ้าส่งให้ได้"></textarea></div>
+      </div>
+    </section>
+
+    <!-- 4 สเปคงาน -->
+    <section class="card">
+      <h2><span class="n">4</span> สเปคงาน ซับใน และอะไหล่</h2>
+      <div class="body">
+        <p class="hint">ส่วนนี้มีผลกับราคามากที่สุด เลือกเท่าที่ทราบ ส่วนที่ไม่แน่ใจปล่อยว่างไว้ได้</p>
+        <div class="f"><label class="lb">ซับใน</label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="lining" value="ไม่มีซับใน"><span>ไม่มีซับใน</span></label>
+            <label class="chip"><input type="checkbox" name="lining" value="ซับในเต็มตัว"><span>ซับในเต็มตัว</span></label>
+            <label class="chip"><input type="checkbox" name="lining" value="ซับในเฉพาะหน้าอก"><span>เฉพาะหน้าอก</span></label>
+            <label class="chip"><input type="checkbox" name="lining" value="ซับในเป้า"><span>ซับในเป้า</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">ฟองน้ำ / โครง</label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="pad" value="ไม่มีฟองน้ำ"><span>ไม่มีฟองน้ำ</span></label>
+            <label class="chip"><input type="checkbox" name="pad" value="ฟองน้ำถอดได้"><span>ฟองน้ำถอดได้</span></label>
+            <label class="chip"><input type="checkbox" name="pad" value="ฟองน้ำเย็บติด"><span>ฟองน้ำเย็บติด</span></label>
+            <label class="chip"><input type="checkbox" name="pad" value="มีโครง/ก้านเหล็ก"><span>มีโครง / ก้านเหล็ก</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">อะไหล่ / อุปกรณ์</label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="trim" value="สายเดี่ยวปรับได้"><span>สายปรับได้ + ห่วง</span></label>
+            <label class="chip"><input type="checkbox" name="trim" value="เชือกผูก"><span>เชือกผูก</span></label>
+            <label class="chip"><input type="checkbox" name="trim" value="ยางยืด"><span>ยางยืด / ขอบยาง</span></label>
+            <label class="chip"><input type="checkbox" name="trim" value="ซิป"><span>ซิป</span></label>
+            <label class="chip"><input type="checkbox" name="trim" value="กระดุม/ตะขอ"><span>กระดุม / ตะขอ</span></label>
+            <label class="chip"><input type="checkbox" name="trim" value="กระเป๋า"><span>กระเป๋า</span></label>
+            <label class="chip"><input type="checkbox" name="trim" value="สายรูด"><span>สายรูด + ปลายสาย</span></label>
+            <label class="chip"><input type="checkbox" name="trim" value="รูระบาย/เลเซอร์"><span>รูระบาย / เลเซอร์</span></label>
+            <label class="chip"><input type="checkbox" name="trim" value="สะท้อนแสง"><span>แถบสะท้อนแสง</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">การเย็บ / ตะเข็บ</label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="stitch" value="โพ้ง 4 เส้น"><span>โพ้ง 4 เส้น</span></label>
+            <label class="chip"><input type="checkbox" name="stitch" value="ล็อค/เย็บสองเข็ม"><span>เย็บสองเข็ม</span></label>
+            <label class="chip"><input type="checkbox" name="stitch" value="Flatlock ตะเข็บเรียบ"><span>Flatlock ตะเข็บเรียบ</span></label>
+            <label class="chip"><input type="checkbox" name="stitch" value="เย็บไร้ตะเข็บ/บอนด์"><span>บอนด์ / ไร้ตะเข็บ</span></label>
+            <label class="chip"><input type="checkbox" name="stitch" value="ให้โรงงานแนะนำ"><span>ให้โรงงานแนะนำ</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">ป้ายและแพ็กเกจจิ้ง</label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="pack" value="ป้ายคอทอ"><span>ป้ายคอทอ</span></label>
+            <label class="chip"><input type="checkbox" name="pack" value="ป้ายซาติน/พิมพ์"><span>ป้ายซาติน / พิมพ์</span></label>
+            <label class="chip"><input type="checkbox" name="pack" value="ป้ายไซส์"><span>ป้ายไซส์</span></label>
+            <label class="chip"><input type="checkbox" name="pack" value="ป้ายแขวน (Hang tag)"><span>ป้ายแขวน (Hang tag)</span></label>
+            <label class="chip"><input type="checkbox" name="pack" value="ถุงโอพีพี/ซิปล็อค"><span>ถุง OPP / ซิปล็อค</span></label>
+            <label class="chip"><input type="checkbox" name="pack" value="กล่องแบรนด์"><span>กล่องแบรนด์</span></label>
+            <label class="chip"><input type="checkbox" name="pack" value="ไม่ต้องการ"><span>ยังไม่ต้องการ</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">รายละเอียดสเปคเพิ่มเติม / จุดที่ต้องการให้เหมือนตัวอย่าง</label>
+          <textarea id="specNote" placeholder="เช่น ทรงเอวสูง ขอบหนา 3 ซม. หลังไขว้ ถอดฟองน้ำได้ ต้องการให้เหมือนรูปที่ 2 ทุกจุด"></textarea></div>
+        <div class="f"><label class="lb">แนบรูปสเปคเพิ่มเติมได้ถ้ามี <span class="opt">(รูปซับใน อะไหล่ ตะเข็บ ป้าย หรือจุดที่อยากให้ทำเหมือน)</span></label>
+          <div class="drop" id="dropSpec">
+            <b>แตะเพื่อแนบรูป</b><small>JPG / PNG · สูงสุด 6 รูป</small>
+          </div>
+          <input type="file" id="fileSpec" accept="image/*" multiple hidden>
+          <div class="thumbs" id="thumbSpec"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 ตัวอย่าง & แพทเทิร์น -->
+    <section class="card">
+      <h2><span class="n">5</span> ตัวอย่าง (Sample) และแพทเทิร์น</h2>
+      <div class="body">
+        <div class="note">
+          <b>โรงงานไม่รับขึ้นตัวอย่างอย่างเดียว</b> — ตัวอย่างต้องเป็นตัวอย่างพร้อมผลิต โดย<b>มัดจำ 50%</b> ของจำนวนงานทั้งหมด
+          เพื่อสั่งผ้าและทำแพทเทิร์นให้ตรงกับลูกค้ามากที่สุด<br>
+          ค่าลงงานตัวอย่าง <b>2,500 บาท</b> · แก้ได้ 2–3 รอบจากแบบเดิม (ปรับรายละเอียดได้ แต่เปลี่ยนทรงไม่ได้) ·
+          ใช้เวลาประมาณ <b>7–10 วัน</b> ทำจากผ้าที่ใกล้เคียงที่มีในโรงงานก่อน · ส่งฟรีทาง EMS
+        </div>
+        <div class="f"><label class="lb">รูปแบบการสั่งงาน <span class="req">*</span></label>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="sample" value="ขึ้นตัวอย่างพร้อมผลิต (มัดจำ 50%)"><span>ขึ้นตัวอย่างพร้อมผลิต (มัดจำ 50%)</span></label>
+            <label class="chip"><input type="radio" name="sample" value="ไม่ขึ้นตัวอย่าง ผลิตเลย"><span>ไม่ขึ้นตัวอย่าง ผลิตเลย</span></label>
+            <label class="chip"><input type="radio" name="sample" value="ขอคำแนะนำจากโรงงาน"><span>ขอคำแนะนำจากโรงงาน</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">สิ่งที่ลูกค้ามีอยู่แล้ว <span class="opt">(เลือกได้หลายข้อ)</span></label>
+          <div class="chips">
+            <label class="chip"><input type="checkbox" name="has" value="มีตัวอย่างจริงส่งให้ได้"><span>มีตัวอย่างจริงส่งให้ได้</span></label>
+            <label class="chip"><input type="checkbox" name="has" value="มีแพทเทิร์น"><span>มีแพทเทิร์นแล้ว</span></label>
+            <label class="chip"><input type="checkbox" name="has" value="มี Tech pack"><span>มี Tech pack</span></label>
+            <label class="chip"><input type="checkbox" name="has" value="มีตารางไซส์"><span>มีตารางไซส์</span></label>
+            <label class="chip"><input type="checkbox" name="has" value="มีไฟล์ลายพิมพ์"><span>มีไฟล์ลายพิมพ์</span></label>
+            <label class="chip"><input type="checkbox" name="has" value="มีแค่รูปอ้างอิง"><span>มีแค่รูปอ้างอิง</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">ไฟล์แนบเพิ่มเติม <span class="opt">(ตารางไซส์ / Tech pack / ลายพิมพ์ / รูปตัวอย่างจริง)</span></label>
+          <div class="drop" id="dropExtra">
+            <b>แตะเพื่อแนบรูป</b><small>JPG / PNG · สูงสุด 6 รูป</small>
+          </div>
+          <input type="file" id="fileExtra" accept="image/*" multiple hidden>
+          <div class="thumbs" id="thumbExtra"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 เวลา งบ จัดส่ง -->
+    <section class="card">
+      <h2><span class="n">6</span> กำหนดเวลา งบประมาณ และการจัดส่ง</h2>
+      <div class="body">
+        <div class="row">
+          <div class="f"><label class="lb">ต้องการรับสินค้าภายในวันที่</label>
+            <input type="date" id="dueDate"></div>
+          <div class="f"><label class="lb">งบประมาณต่อตัว <span class="opt">(ถ้ามี)</span></label>
+            <input type="text" id="budget" placeholder="เช่น ไม่เกิน 250 บาท/ตัว"></div>
+        </div>
+        <div class="f"><label class="lb">ความเร่งด่วน</label>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="urgency" value="ยังไม่รีบ วางแผนล่วงหน้า"><span>ยังไม่รีบ</span></label>
+            <label class="chip"><input type="radio" name="urgency" value="ภายใน 1-2 เดือน"><span>ภายใน 1–2 เดือน</span></label>
+            <label class="chip"><input type="radio" name="urgency" value="ด่วน ภายใน 1 เดือน"><span>ด่วน ภายใน 1 เดือน</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">การรับสินค้า</label>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="ship" value="ขนส่งเอกชน"><span>ขนส่งเอกชน (Flash/Kerry/J&amp;T)</span></label>
+            <label class="chip"><input type="radio" name="ship" value="ไปรษณีย์ EMS"><span>ไปรษณีย์ EMS</span></label>
+            <label class="chip"><input type="radio" name="ship" value="รับเองที่โรงงาน"><span>รับเองที่โรงงาน</span></label>
+            <label class="chip"><input type="radio" name="ship" value="ส่งออกต่างประเทศ"><span>ส่งออกต่างประเทศ</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">ที่อยู่จัดส่ง <span class="opt">(กรอกตอนนี้หรือแจ้งภายหลังก็ได้)</span></label>
+          <textarea id="addr" placeholder="ชื่อผู้รับ / ที่อยู่ / จังหวัด / รหัสไปรษณีย์ / เบอร์โทร"></textarea></div>
+        <div class="f"><label class="lb">ต้องการเข้าชมโรงงานหรือไม่ <span class="opt">(กรุณานัดหมายล่วงหน้า เปิด จ.–ส.)</span></label>
+          <div class="chips">
+            <label class="chip"><input type="radio" name="visit" value="ต้องการนัดเข้าชมโรงงาน"><span>ต้องการนัดเข้าชม</span></label>
+            <label class="chip"><input type="radio" name="visit" value="ไม่จำเป็น คุยออนไลน์ได้"><span>คุยออนไลน์ได้</span></label>
+          </div>
+        </div>
+        <div class="f"><label class="lb">ข้อมูลเพิ่มเติม / คำถามถึงโรงงาน</label>
+          <textarea id="finalNote" placeholder="อยากให้ทีมงานทราบอะไรเพิ่มเติม"></textarea></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="subbar"><div class="in">
+    <button type="button" class="btn ghost" id="btnSave">บันทึกร่าง</button>
+    <button type="button" class="btn" id="btnSubmit">ส่งข้อมูลขอใบเสนอราคา</button>
+  </div></div>
+</div>
+
+<div id="pdfSheet"></div>
+
+<div class="done" id="doneView">
+  <div class="tick">&#10003;</div>
+  <h2>ได้รับข้อมูลเรียบร้อยแล้ว</h2>
+  <p>ทีมงาน Formko Garment จะตรวจสอบและติดต่อกลับพร้อมใบเสนอราคาภายใน 1–2 วันทำการ<br>หากต้องการสอบถามเร่งด่วน โทร 064-629-4287</p>
+  <div class="code" id="refCode">—</div>
+  <div style="margin-top:22px">
+    <button type="button" class="btn" id="btnPdf" style="max-width:320px;margin:0 auto">ดาวน์โหลดใบสรุปงาน (PDF)</button>
+    <p style="font-size:12.5px;color:#9aa0ac;margin-top:10px">เก็บไฟล์นี้ไว้อ้างอิงกับทีมงานได้เลย</p>
+  </div>
+</div>
+
+<script>
+/* ====== ตั้งค่า: วาง URL ของ Apps Script Web App ตรงนี้ ====== */
+const SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+/* ============================================================= */
+
+const SIZES = ["XS","S","M","L","XL","2XL","3XL","Free"];
+const PRODUCT_TYPES = ["ชุดว่ายน้ำวันพีซ","บิกินี่ / ทูพีซ","ชุดว่ายน้ำชาย","สปอร์ตบรา","เลกกิ้ง / กางเกงออกกำลังกาย","เสื้อกีฬา / เสื้อทีม","ชุดเซ็ตออกกำลังกาย","ยูนิฟอร์ม","ชุดนอน","อื่นๆ"];
+
+let designSeq = 0;
+const extraFiles = [];
+const specFiles = [];
+
+/* ---------- design block ---------- */
+function designTemplate(id){
+  const opts = PRODUCT_TYPES.map(t=>`<option value="${t}">${t}</option>`).join("");
+  const szs = SIZES.map(s=>`<div class="sz"><b>${s}</b><input type="number" min="0" inputmode="numeric" class="szq" data-size="${s}" placeholder="0"></div>`).join("");
+  return `
+  <div class="design" data-id="${id}">
+    <div class="dh"><strong>แบบที่ <span class="dnum"></span></strong>
+      <button type="button" class="btn-x" data-act="del">ลบแบบนี้</button></div>
+    <div class="db">
+      <div class="row">
+        <div class="f"><label class="lb">ประเภทสินค้า <span class="req">*</span></label>
+          <select class="dType"><option value="">— เลือก —</option>${opts}</select></div>
+        <div class="f"><label class="lb">ชื่อเรียกแบบ <span class="opt">(ถ้ามี)</span></label>
+          <input type="text" class="dName" placeholder="เช่น ชุดลายกุ้ง / Board short"></div>
+      </div>
+
+      <div class="f"><label class="lb">รูปแบบหน้า–หลัง <span class="req">*</span> <span class="opt">(ยิ่งชัดยิ่งตีราคาแม่น)</span></label>
+        <div class="drop dDrop"><b>แตะเพื่อแนบรูปแบบ</b><small>ควรมีทั้งด้านหน้าและด้านหลัง · สูงสุด 6 รูป</small></div>
+        <input type="file" class="dFile" accept="image/*" multiple hidden>
+        <div class="thumbs dThumbs"></div>
+      </div>
+
+      <div class="f"><label class="lb">ลิงก์อ้างอิง <span class="opt">(IG / TikTok / Shopee / Pinterest)</span></label>
+        <input type="text" class="dLink" placeholder="วางลิงก์รูปแบบที่ต้องการ"></div>
+
+      <div class="row">
+        <div class="f"><label class="lb">จำนวนสีที่ต้องการ</label>
+          <input type="number" min="1" class="dColors" value="1" inputmode="numeric"></div>
+        <div class="f"><label class="lb">ระบุสี</label>
+          <input type="text" class="dColorList" placeholder="เช่น ดำ, เขียวมิ้นท์, ครีม"></div>
+      </div>
+
+      <div class="f"><label class="lb">จำนวนแยกตามไซส์ <span class="req">*</span> <span class="opt">(ขั้นต่ำรวม 100 ตัว/แบบ/สี)</span></label>
+        <div class="sizes">${szs}</div>
+        <div style="margin-top:8px;font-size:13px;color:#6b7280">รวมแบบนี้: <b class="dTotal" style="color:#06693A">0</b> ตัว</div>
+      </div>
+
+      <div class="f"><label class="lb">หมายเหตุของแบบนี้</label>
+        <textarea class="dNote" placeholder="เช่น ตัวนี้ขอซับในเต็มตัว ฟองน้ำถอดได้ ขอบเอวสูง"></textarea></div>
+    </div>
+  </div>`;
+}
+
+function renumber(){
+  const blocks = document.querySelectorAll(".design");
+  blocks.forEach((b,i)=>{ b.querySelector(".dnum").textContent = i+1;
+    b.querySelector('[data-act="del"]').style.display = blocks.length>1 ? "" : "none"; });
+  document.getElementById("grandDesigns").textContent = blocks.length;
+}
+
+function recalc(){
+  let grand = 0;
+  document.querySelectorAll(".design").forEach(b=>{
+    let t = 0;
+    b.querySelectorAll(".szq").forEach(i=> t += (parseInt(i.value,10)||0));
+    b.querySelector(".dTotal").textContent = t.toLocaleString("th-TH");
+    grand += t;
+  });
+  document.getElementById("grandQty").textContent = grand.toLocaleString("th-TH");
+  progress();
+}
+
+function compress(file){
+  return new Promise(res=>{
+    const r = new FileReader();
+    r.onload = e=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const max = 1400;
+        let {width:w, height:h} = img;
+        if(w>max || h>max){ const k = max/Math.max(w,h); w=Math.round(w*k); h=Math.round(h*k); }
+        const c = document.createElement("canvas"); c.width=w; c.height=h;
+        c.getContext("2d").drawImage(img,0,0,w,h);
+        res({ name:file.name, dataUrl:c.toDataURL("image/jpeg",0.78) });
+      };
+      img.onerror = ()=>res(null);
+      img.src = e.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+function renderThumbs(container, arr){
+  container.innerHTML = arr.map((f,i)=>
+    `<div class="thumb"><img src="${f.dataUrl}" alt=""><button type="button" data-i="${i}">&times;</button></div>`).join("");
+}
+
+async function handleFiles(inputEl, arr, thumbEl){
+  const files = [...inputEl.files].slice(0, 6-arr.length);
+  for(const f of files){
+    if(!f.type.startsWith("image/")) continue;
+    const out = await compress(f);
+    if(out) arr.push(out);
+  }
+  inputEl.value = "";
+  renderThumbs(thumbEl, arr);
+  progress();
+}
+
+function addDesign(){
+  const id = ++designSeq;
+  const host = document.getElementById("designs");
+  host.insertAdjacentHTML("beforeend", designTemplate(id));
+  const block = host.lastElementChild;
+  block.__files = [];
+
+  block.querySelector('[data-act="del"]').addEventListener("click", ()=>{
+    block.remove(); renumber(); recalc();
+  });
+  const fileInput = block.querySelector(".dFile");
+  block.querySelector(".dDrop").addEventListener("click", ()=>fileInput.click());
+  fileInput.addEventListener("change", ()=>handleFiles(fileInput, block.__files, block.querySelector(".dThumbs")));
+  block.querySelector(".dThumbs").addEventListener("click", e=>{
+    const b = e.target.closest("button"); if(!b) return;
+    block.__files.splice(+b.dataset.i,1); renderThumbs(block.querySelector(".dThumbs"), block.__files);
+  });
+  block.querySelectorAll(".szq").forEach(i=>i.addEventListener("input", recalc));
+  block.querySelectorAll("input,select,textarea").forEach(i=>i.addEventListener("input", progress));
+  renumber(); recalc();
+}
+
+/* ---------- spec files ---------- */
+const fileSpec = document.getElementById("fileSpec");
+document.getElementById("dropSpec").addEventListener("click", ()=>fileSpec.click());
+fileSpec.addEventListener("change", ()=>handleFiles(fileSpec, specFiles, document.getElementById("thumbSpec")));
+document.getElementById("thumbSpec").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  specFiles.splice(+b.dataset.i,1); renderThumbs(document.getElementById("thumbSpec"), specFiles);
+});
+
+/* ---------- extra files ---------- */
+const fileExtra = document.getElementById("fileExtra");
+document.getElementById("dropExtra").addEventListener("click", ()=>fileExtra.click());
+fileExtra.addEventListener("change", ()=>handleFiles(fileExtra, extraFiles, document.getElementById("thumbExtra")));
+document.getElementById("thumbExtra").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  extraFiles.splice(+b.dataset.i,1); renderThumbs(document.getElementById("thumbExtra"), extraFiles);
+});
+
+/* ---------- progress ---------- */
+function progress(){
+  const checks = [
+    () => val("cName"), () => val("cTel"),
+    () => !!document.querySelector('input[name="custType"]:checked'),
+    () => [...document.querySelectorAll(".dType")].some(s=>s.value),
+    () => [...document.querySelectorAll(".design")].some(b=>b.__files && b.__files.length),
+    () => [...document.querySelectorAll(".szq")].some(i=>+i.value>0),
+    () => !!document.querySelector('input[name="fabSrc"]:checked'),
+    () => !!document.querySelector('input[name="fabType"]:checked'),
+    () => !!document.querySelector('input[name="lining"]:checked') || !!document.querySelector('input[name="pad"]:checked'),
+    () => !!document.querySelector('input[name="trim"]:checked') || !!val("specNote"),
+    () => !!document.querySelector('input[name="sample"]:checked'),
+    () => !!document.querySelector('input[name="ship"]:checked') || !!val("addr"),
+  ];
+  const done = checks.filter(f=>{ try{ return f(); }catch(e){ return false; } }).length;
+  const pct = Math.round(done/checks.length*100);
+  document.getElementById("barFill").style.width = pct+"%";
+  document.getElementById("barTxt").textContent = "ข้อมูลครบ "+pct+"%";
+}
+
+const val = id => (document.getElementById(id)?.value || "").trim();
+const many = name => [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(i=>i.value).join(", ");
+const one  = name => document.querySelector(`input[name="${name}"]:checked`)?.value || "";
+
+/* ---------- collect ---------- */
+function collect(){
+  const designs = [...document.querySelectorAll(".design")].map((b,i)=>{
+    const sizes = {};
+    b.querySelectorAll(".szq").forEach(inp=>{ const v=parseInt(inp.value,10)||0; if(v>0) sizes[inp.dataset.size]=v; });
+    const total = Object.values(sizes).reduce((a,c)=>a+c,0);
+    return {
+      no: i+1,
+      type: b.querySelector(".dType").value,
+      name: b.querySelector(".dName").value.trim(),
+      link: b.querySelector(".dLink").value.trim(),
+      colorCount: b.querySelector(".dColors").value,
+      colorList: b.querySelector(".dColorList").value.trim(),
+      sizes, total,
+      sizeText: Object.entries(sizes).map(([k,v])=>k+"="+v).join(", "),
+      note: b.querySelector(".dNote").value.trim(),
+      images: b.__files || []
+    };
+  });
+  return {
+    submittedAt: new Date().toISOString(),
+    contact: { name:val("cName"), tel:val("cTel"), brand:val("cBrand"), line:val("cLine"),
+               type:one("custType"), experience:one("exp") },
+    designs,
+    grandTotal: designs.reduce((a,d)=>a+d.total,0),
+    fabric: { source:one("fabSrc"), types:many("fabType"), gsm:val("fabGsm"),
+              color:val("fabColor"), print:many("print"), note:val("fabNote") },
+    spec: { lining:many("lining"), pad:many("pad"), trim:many("trim"),
+            stitch:many("stitch"), packaging:many("pack"), note:val("specNote"), images:specFiles },
+    sample: { need:one("sample"), has:many("has") },
+    logistics: { dueDate:val("dueDate"), budget:val("budget"), urgency:one("urgency"),
+                 shipping:one("ship"), address:val("addr"), visit:one("visit"), note:val("finalNote") },
+    extraImages: extraFiles
+  };
+}
+
+/* ---------- validate ---------- */
+function validate(d){
+  const e = [];
+  if(!d.contact.name) e.push("กรุณากรอกชื่อผู้ติดต่อ");
+  if(!d.contact.tel)  e.push("กรุณากรอกเบอร์โทร");
+  if(!d.sample.need)  e.push("กรุณาเลือกรูปแบบการสั่งงานในข้อ 5");
+  d.designs.forEach(x=>{
+    if(!x.type) e.push(`แบบที่ ${x.no}: ยังไม่ได้เลือกประเภทสินค้า`);
+    if(!x.images.length && !x.link) e.push(`แบบที่ ${x.no}: กรุณาแนบรูปแบบ หรือใส่ลิงก์อ้างอิง`);
+    if(!x.total) e.push(`แบบที่ ${x.no}: กรุณาระบุจำนวนแยกตามไซส์`);
+  });
+  return e;
+}
+
+/* ---------- draft ---------- */
+const DRAFT = "formko_quote_draft_v1";
+function saveDraft(silent){
+  try{
+    const d = collect();
+    localStorage.setItem(DRAFT, JSON.stringify(d));
+    if(!silent) toast("บันทึกร่างแล้ว เปิดลิงก์เดิมในเครื่องนี้เพื่อกรอกต่อได้");
+  }catch(err){ if(!silent) toast("บันทึกร่างไม่สำเร็จ"); }
+}
+function toast(msg){
+  const box = document.getElementById("errBox");
+  box.style.display="block"; box.style.background="#eef6f1"; box.style.borderColor="#bfe0cd";
+  box.style.color="#06693A"; box.textContent = msg;
+  window.scrollTo({top:0,behavior:"smooth"});
+  setTimeout(()=>{ box.style.display="none"; }, 3500);
+}
+function showErr(list){
+  const box = document.getElementById("errBox");
+  box.style.background=""; box.style.borderColor=""; box.style.color="";
+  box.style.display="block";
+  box.innerHTML = "<b>กรุณาตรวจสอบข้อมูล</b><br>• " + list.join("<br>• ");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ---------- submit ---------- */
+document.getElementById("btnSave").addEventListener("click", ()=>saveDraft(false));
+document.getElementById("addDesign").addEventListener("click", addDesign);
+
+document.getElementById("btnSubmit").addEventListener("click", async ()=>{
+  const data = collect();
+  const errs = validate(data);
+  if(errs.length){ showErr(errs); return; }
+  const btn = document.getElementById("btnSubmit");
+  btn.disabled = true; btn.textContent = "กำลังส่งข้อมูล...";
+  saveDraft(true);
+  try{
+    if(!SCRIPT_URL || SCRIPT_URL.indexOf("PASTE_") === 0) throw new Error("no-endpoint");
+    const res = await fetch(SCRIPT_URL, {
+      method:"POST", redirect:"follow",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify(data)
+    });
+    const out = await res.json();
+    if(!out.ok) throw new Error(out.error || "server");
+    localStorage.removeItem(DRAFT);
+    document.getElementById("refCode").textContent = out.ref || "รับข้อมูลแล้ว";
+    document.getElementById("formView").style.display = "none";
+    document.querySelector(".subbar").style.display = "none";
+    document.getElementById("doneView").style.display = "block";
+    window.scrollTo({top:0});
+    lastData = data; lastRef = out.ref || "QUOTE";
+    try{ await makePdf(lastData, lastRef); }catch(e){}
+  }catch(err){
+    btn.disabled = false; btn.textContent = "ส่งข้อมูลขอใบเสนอราคา";
+    showErr(["ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หรือติดต่อ LINE / โทร 064-629-4287 (ข้อมูลถูกบันทึกเป็นร่างไว้ในเครื่องแล้ว)"]);
+  }
+});
+
+/* ---------- PDF สรุปงาน ---------- */
+const LOGO = document.querySelector("header .logoBox img").src;
+const esc = v => String(v==null?"":v).replace(/[&<>]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const dash = v => (v && String(v).trim()) ? esc(v) : "—";
+let lastData = null, lastRef = "";
+
+function row(label, value){ return `<tr><th>${label}</th><td>${dash(value)}</td></tr>`; }
+
+function buildSheet(d, ref){
+  const now = new Date().toLocaleString("th-TH",{dateStyle:"long",timeStyle:"short"});
+  const designRows = d.designs.map(x=>`
+    <tr>
+      <td>${x.no}</td>
+      <td class="l">${dash(x.type)}${x.name?"<br><span style='color:#6b7280;font-size:11px'>"+esc(x.name)+"</span>":""}</td>
+      <td class="l">${dash(x.colorList || (x.colorCount ? x.colorCount+" สี" : ""))}</td>
+      <td class="l">${dash(x.sizeText)}</td>
+      <td><b>${x.total.toLocaleString("th-TH")}</b></td>
+    </tr>`).join("");
+
+  const designDetail = d.designs.map(x=>`
+    <h2>แบบที่ ${x.no} — ${esc(x.type||"")}${x.name?" ("+esc(x.name)+")":""}</h2>
+    <table>
+      ${row("จำนวนสี", x.colorList || x.colorCount)}
+      ${row("ไซส์ / จำนวน", x.sizeText)}
+      ${row("รวมแบบนี้", x.total.toLocaleString("th-TH")+" ตัว")}
+      ${x.link ? row("ลิงก์อ้างอิง", x.link) : ""}
+      ${x.note ? row("หมายเหตุ", x.note) : ""}
+    </table>
+    ${x.images.length ? `<div class="imgs">${x.images.map(i=>`<img src="${i.dataUrl}">`).join("")}</div>` : ""}
+  `).join("");
+
+  return `<div class="pg">
+    <div class="ph">
+      <div><img src="${LOGO}" alt=""><div style="font-size:11px;color:#6b7280;margin-top:6px">
+        Formko Garment Co., Ltd. · โทร 064-629-4287</div></div>
+      <div class="r"><h1>ใบสรุปข้อมูลขอใบเสนอราคา</h1>
+        <div class="ref">${esc(ref)}</div><div class="dt">${esc(now)}</div></div>
+    </div>
+
+    <h2>1. ข้อมูลผู้ติดต่อ</h2>
+    <table>
+      ${row("ชื่อผู้ติดต่อ", d.contact.name)}
+      ${row("เบอร์โทร", d.contact.tel)}
+      ${row("แบรนด์ / บริษัท", d.contact.brand)}
+      ${row("LINE / ช่องทางติดต่อ", d.contact.line)}
+      ${row("ประเภทลูกค้า", d.contact.type)}
+      ${row("ประสบการณ์สั่งผลิต", d.contact.experience)}
+    </table>
+
+    <h2>2. สรุปรายการสินค้า</h2>
+    <table class="dt2">
+      <tr><th style="width:42px">แบบ</th><th>ประเภทสินค้า</th><th>สี</th><th>ไซส์ / จำนวน</th><th style="width:78px">รวม</th></tr>
+      ${designRows}
+      <tr class="tot"><td colspan="4" class="l">รวมทั้งหมด ${d.designs.length} แบบ</td>
+        <td>${d.grandTotal.toLocaleString("th-TH")}</td></tr>
+    </table>
+
+    ${designDetail}
+
+    <h2>3. ผ้าและวัตถุดิบ</h2>
+    <table>
+      ${row("การจัดหาผ้า", d.fabric.source)}
+      ${row("ชนิดผ้า", d.fabric.types)}
+      ${row("น้ำหนัก / ความหนา", d.fabric.gsm)}
+      ${row("สี / รหัสสี", d.fabric.color)}
+      ${row("งานพิมพ์ / ลาย", d.fabric.print)}
+      ${row("หมายเหตุผ้า", d.fabric.note)}
+    </table>
+
+    <h2>4. สเปคงาน</h2>
+    <table>
+      ${row("ซับใน", d.spec.lining)}
+      ${row("ฟองน้ำ / โครง", d.spec.pad)}
+      ${row("อะไหล่ / อุปกรณ์", d.spec.trim)}
+      ${row("การเย็บ / ตะเข็บ", d.spec.stitch)}
+      ${row("ป้าย / แพ็กเกจจิ้ง", d.spec.packaging)}
+      ${row("รายละเอียดเพิ่มเติม", d.spec.note)}
+    </table>
+    ${d.spec.images.length ? `<div class="imgs">${d.spec.images.map(i=>`<img src="${i.dataUrl}">`).join("")}</div>` : ""}
+
+    <h2>5. ตัวอย่างและแพทเทิร์น</h2>
+    <table>
+      ${row("รูปแบบการสั่งงาน", d.sample.need)}
+      ${row("สิ่งที่ลูกค้ามีอยู่แล้ว", d.sample.has)}
+    </table>
+    ${d.extraImages.length ? `<div class="imgs">${d.extraImages.map(i=>`<img src="${i.dataUrl}">`).join("")}</div>` : ""}
+
+    <h2>6. กำหนดเวลาและการจัดส่ง</h2>
+    <table>
+      ${row("กำหนดรับสินค้า", d.logistics.dueDate)}
+      ${row("งบประมาณต่อตัว", d.logistics.budget)}
+      ${row("ความเร่งด่วน", d.logistics.urgency)}
+      ${row("การจัดส่ง", d.logistics.shipping)}
+      ${row("ที่อยู่จัดส่ง", d.logistics.address)}
+      ${row("เข้าชมโรงงาน", d.logistics.visit)}
+      ${row("หมายเหตุเพิ่มเติม", d.logistics.note)}
+    </table>
+
+    <div class="cond"><b>เงื่อนไขเบื้องต้นของโรงงาน</b><br>
+      • ขั้นต่ำ 100 ตัว ต่อแบบ ต่อสี (ผ้า 1 ม้วน) คละได้ 3–4 ไซส์<br>
+      • โรงงานไม่รับขึ้นตัวอย่างอย่างเดียว ตัวอย่างต้องเป็นตัวอย่างพร้อมผลิต มัดจำ 50% ของจำนวนงานทั้งหมด<br>
+      • ค่าลงงานตัวอย่าง 2,500 บาท แก้ได้ 2–3 รอบจากแบบเดิม (ปรับรายละเอียดได้ แต่เปลี่ยนทรงไม่ได้)<br>
+      • ตัวอย่างใช้เวลาประมาณ 7–10 วัน ทำจากผ้าที่ใกล้เคียงที่มีในโรงงานก่อน ส่งฟรีทาง EMS<br>
+      • เอกสารนี้เป็นการสรุปข้อมูลเพื่อประเมินราคา ยังไม่ใช่ใบเสนอราคา ราคาจะยืนยันอีกครั้งโดยทีมงาน
+    </div>
+
+    <div class="ft"><span>Formko Garment Co., Ltd. · facebook.com/FormkoGarment</span>
+      <span>${esc(ref)}</span></div>
+  </div>`;
+}
+
+async function makePdf(d, ref){
+  if(!window.jspdf || !window.html2canvas) throw new Error("lib");
+  const sheet = document.getElementById("pdfSheet");
+  sheet.innerHTML = buildSheet(d, ref);
+  await new Promise(r=>setTimeout(r, 350));
+  const canvas = await html2canvas(sheet, { scale:2, backgroundColor:"#ffffff", useCORS:true, windowWidth:794 });
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF("p","mm","a4");
+  const pw = 210, ph = 297;
+  const iw = pw, ih = canvas.height * pw / canvas.width;
+  const pxPerPage = Math.floor(canvas.width * ph / pw);
+  const octx = canvas.getContext("2d");
+  const isBlank = row => {
+    try{
+      const dat = octx.getImageData(0, row, canvas.width, 1).data;
+      for(let x=0; x<canvas.width; x+=8){
+        const i = x*4;
+        if(dat[i]<248 || dat[i+1]<248 || dat[i+2]<248) return false;
+      }
+      return true;
+    }catch(e){ return false; }
+  };
+  let y = 0, first = true;
+  while(y < canvas.height){
+    let hSlice = Math.min(pxPerPage, canvas.height - y);
+    if(y + hSlice < canvas.height){                 /* หาเส้นว่างเพื่อไม่ให้ตัดกลางตาราง */
+      const floor = Math.floor(hSlice * 0.82);
+      for(let k = hSlice; k > floor; k--){
+        if(isBlank(y + k)){ hSlice = k; break; }
+      }
+    }
+    const c = document.createElement("canvas");
+    c.width = canvas.width; c.height = hSlice;
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = "#fff"; ctx.fillRect(0,0,c.width,c.height);
+    ctx.drawImage(canvas, 0, y, canvas.width, hSlice, 0, 0, canvas.width, hSlice);
+    if(!first) pdf.addPage();
+    pdf.addImage(c.toDataURL("image/jpeg",0.9), "JPEG", 0, 0, pw, hSlice * pw / canvas.width);
+    first = false; y += hSlice;
+  }
+  pdf.save("Formko-" + ref + ".pdf");
+  sheet.innerHTML = "";
+}
+
+document.getElementById("btnPdf").addEventListener("click", async function(){
+  const b = this; b.disabled = true; b.textContent = "กำลังสร้าง PDF...";
+  try{ await makePdf(lastData, lastRef); b.textContent = "ดาวน์โหลดใบสรุปงาน (PDF)"; }
+  catch(e){ b.textContent = "สร้าง PDF ไม่สำเร็จ — กดเพื่อพิมพ์แทน";
+    window.print(); }
+  b.disabled = false;
+});
+
+/* ---------- init ---------- */
+addDesign();
+document.querySelectorAll("input,select,textarea").forEach(i=>i.addEventListener("input", progress));
+progress();
+</script>
+</body>
+</html>
