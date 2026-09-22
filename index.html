@@ -717,7 +717,9 @@ document.getElementById("btnSubmit").addEventListener("click", async ()=>{
     try{ await makePdf(lastData, lastRef); }catch(e){}
   }catch(err){
     btn.disabled = false; btn.textContent = "ส่งข้อมูลขอใบเสนอราคา";
-    showErr(["ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หรือติดต่อ LINE / โทร 064-629-4287 (ข้อมูลถูกบันทึกเป็นร่างไว้ในเครื่องแล้ว)"]);
+    showErr(["ส่งข้อมูลไม่สำเร็จ กรุณาลองใหม่อีกครั้ง หรือติดต่อ LINE / โทร 064-629-4287 (ข้อมูลถูกบันทึกเป็นร่างไว้ในเครื่องแล้ว)",
+             "<span style='font-size:12px;color:#8a5a5a'>รายละเอียด: " + esc(err && err.message ? err.message : err) + "</span>"]);
+    console.error("[formko] submit failed:", err);
   }
 });
 
